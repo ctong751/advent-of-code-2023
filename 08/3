@@ -1,0 +1,75 @@
+const directions = new Map();
+directions.set("L", 0);
+directions.set("R", 1);
+
+async function solve() {
+    const file = await fetch("file:///Users/ctong751/repos/advent-of-code-2023/08/input.txt");
+    const data = await file.text();
+    const lines = data.split("\n");
+
+    let leftRight;
+    let nodeMap = new Map();
+    let startingNodes = [];
+    let endNodes = [];
+    for (let i = 0; i < lines.length; i++) {
+	if (lines[i] === "") {
+	    continue;
+	}
+	if (i === 0) {
+	    leftRight = lines[i].split("");
+	    continue;
+	}
+
+	const [node, intersection] = lines[i].split(" = ");
+	let options = intersection.split(", ");
+	options[0] = options[0].substring(1);
+	options[1] = options[1].substring(0, options[1].length - 1);
+	nodeMap.set(node, options);
+	if (node[2] === "A") {
+	    startingNodes.push(node);
+	}
+	if (node[2] === "Z") {
+	    endNodes.push(node);
+	}
+    }
+
+    let shortest = [];
+    for (let i = 0; i < startingNodes.length; i++) {
+	let lrIndex = 0;
+	let steps = 0;
+	while (startingNodes[i][2] !== "Z") {
+	    if (lrIndex === leftRight.length) {
+		lrIndex = 0;
+	    }
+	    const direction = directions.get(leftRight[lrIndex++]);
+	    startingNodes[i] = nodeMap.get(startingNodes[i])[direction];
+	    steps++;
+	}
+	shortest.push(steps);
+    }
+    console.log(shortest);
+    let value = shortest[0];
+    for (let i = 0; i < shortest.length; i++) {
+	if (shortest[i] > value) {
+	    value = shortest[i];
+	}
+    }
+
+    let lcm = false;
+    let val = value;
+    while (!lcm) {
+	lcm = true;
+	for (let i = 0; i < shortest.length; i++) {
+	    if (value % shortest[i] !== 0) {
+		lcm = false;
+		break;
+	    }
+	}
+	value += val;
+    }
+    return value;
+
+}
+
+const answer = await solve();
+console.log(answer);
